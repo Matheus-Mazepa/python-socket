@@ -11,33 +11,36 @@ server = sock.bind(('localhost', 9000))
 sock.listen(1)
 
 # Aceitar uma conexao e finaliza-la
-mensagem = "Ola Cliente"
-tamanho_da_mensagem = len(mensagem)
-print("Tamanho da mensagem = {}".format(len(mensagem)))
+message = ''
+received_data = ''
+print("Aguardando conexao")
+connection, address_client = sock.accept()
 
-while True:
+while message != 'see ya' or received_data != 'see ya':
     # Aguardar uma conexao
-    print("Aguardando conexao")
-    connection, address_client = sock.accept()    
-    
+
+    message = raw_input("Digite sua mensagem: ").strip()
+    tamanho_da_mensagem = len(message)
+
     # Envio tamanho da mensagem
     connection.sendall(str(tamanho_da_mensagem).zfill(4).encode())
     
     # Enviar mensagem
-    connection.sendall(mensagem.encode())
-
+    connection.sendall(message.encode())
+    if message == 'see ya':
+        break
     # Aguardar tamanho da mensagem
     expected_data_size = ''
     while(expected_data_size == ''):
         expected_data_size += connection.recv(4).decode()
     expected_data_size = int(expected_data_size)
 
-    received_data = ''
     while len(received_data) < expected_data_size:
-        # Ler o dado recebido
         received_data += connection.recv(4).decode()
-        print("Tamanho do dado {}".format(len(received_data)))
     print(received_data)
+    if received_data == 'see ya':
+        break
 
     # Finalizar a conexao
-    connection.close()
+connection.close()
+sock.close()
